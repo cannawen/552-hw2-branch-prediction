@@ -356,10 +356,27 @@ sim_main(void)
     //if we get to a conditional integer or floating point
     if( (MD_OP_FLAGS(op) & F_COND) || (MD_OP_FLAGS(op) & F_FPCOND) )
     {
-        sim_num_br++;//one more conditional branch
-        //always predict taken
-        if(regs.regs_NPC==regs.regs_PC + 8) //if next PC == current PC + 8
-            sim_num_mispred_static ++;//then the branch was not taken--misprediction
+        //Conditional branch encountered
+        sim_num_br++;
+        
+        //Randomly predict if branch was taken
+        int random_taken = rand()%2;//1: taken. 0: not taken
+            
+        if(regs.regs_NPC==regs.regs_PC + 8) //if branch was not taken
+        {
+            //STATIC predicted taken, was not taken
+            sim_num_mispred_static ++;//misprediction ++
+            
+            //RANDOM predicted taken, was not taken
+            if(random_taken)
+                sim_num_mispred_random++;//misprediction++
+        }
+        else//if branch was taken
+        {
+            //RANDOM predicted not taken, was taken
+            if(!random_taken)
+                sim_num_mispred_random++;//misprediction++
+        }
     }
 /* ECE552 Assignment 2 - END CODE*/
 
