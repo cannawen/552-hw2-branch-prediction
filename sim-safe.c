@@ -352,6 +352,18 @@ sim_main(void)
 	  panic("attempted to execute a bogus opcode");
       }
 
+/* ECE552 Assignment 2 - BEGIN CODE*/
+    //if we get to a conditional integer or floating point
+    if( (MD_OP_FLAGS(op) & F_COND) || (MD_OP_FLAGS(op) & F_FPCOND) )
+    {
+        sim_num_br++;//one more conditional branch
+        //always predict taken
+        if(regs.regs_NPC==regs.regs_PC + 8) //if next PC == current PC + 8
+            sim_num_mispred_static ++;//then the branch was not taken--misprediction
+    }
+/* ECE552 Assignment 2 - END CODE*/
+
+
       if (fault != md_fault_none)
 	fatal("fault (%d) detected @ 0x%08p", fault, regs.regs_PC);
 
