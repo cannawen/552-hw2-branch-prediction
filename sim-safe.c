@@ -306,6 +306,15 @@ sim_main(void)
   register int is_write;
   enum md_fault_type fault;
 
+/* ECE552 Assignment 2 - BEGIN CODE*/ 
+
+	int i;
+	for(i=0;i<4096;i++)
+		twobit[i]=0;
+
+/* ECE552 Assignment 2 - END CODE*/ 
+
+
   fprintf(stderr, "sim: ** starting functional simulation **\n");
 
   /* set up initial default next PC */
@@ -359,7 +368,7 @@ sim_main(void)
 
 /* ECE552 Assignment 2 - BEGIN CODE*/
     //if we get to a conditional integer or floating point
-    if( (MD_OP_FLAGS(op) & F_COND) || (MD_OP_FLAGS(op) & F_FPCOND) )
+    if( MD_OP_FLAGS(op) & F_COND )
     {
         //Conditional branch encountered
         sim_num_br++;
@@ -367,7 +376,7 @@ sim_main(void)
         //Randomly predict if branch was taken
         int random_taken = rand()%2;//1: taken. 0: not taken
         
-        int indextwobit = (regs.regs_PC >> 4) & 0xFFF;
+        int indextwobit = (regs.regs_PC >> 3) & 0xFFF;
         
         if(regs.regs_NPC==regs.regs_PC + 8) //if branch was not taken
         {
@@ -390,10 +399,10 @@ sim_main(void)
                 twobit[indextwobit]=3;
                 sim_num_mispred_2bitsat++;//incorrect
             }
-            /*else if(twobit[indextwobit]==3)//predict not taken
+            else if(twobit[indextwobit]==3)//predict not taken
                 twobit[indextwobit]=3;//correct
             else
-                panic("WHAT THE FUCK IS HAPPENING");*/
+                panic("WHAT THE FUCK IS HAPPENING");
         }
         else//if branch was taken
         {
@@ -406,6 +415,8 @@ sim_main(void)
                 twobit[indextwobit]=1;
                 sim_num_mispred_2bitsat++;//incorrect
             }
+            else if(twobit[indextwobit]==1)//predict taken
+                twobit[indextwobit]=1;//correct
             else if(twobit[indextwobit]==2)//predict taken
                 twobit[indextwobit]=1;//correct
             else if(twobit[indextwobit]==3)//predict not taken
@@ -413,10 +424,8 @@ sim_main(void)
                 twobit[indextwobit]=0;
                 sim_num_mispred_2bitsat++;//incorrect
             }
-            /*else if(twobit[indextwobit]==1)//predict taken
-                twobit[indextwobit]=1;//correct
             else
-                panic("WHAT THE FUCK IS HAPPENING");*/
+                panic("WHAT THE FUCK IS HAPPENING");
         }
     }
 /* ECE552 Assignment 2 - END CODE*/
