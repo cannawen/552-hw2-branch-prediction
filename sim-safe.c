@@ -299,6 +299,8 @@ sim_uninit(void)
 #define SYSCALL(INST)	sys_syscall(&regs, mem_access, mem, INST, TRUE)
 
 /* ECE552 Assignment 2 - BEGIN CODE*/ 
+#define PARANOIA 1
+
 //function for 2level
     void twobitsat(int *counter)
     {
@@ -316,11 +318,12 @@ sim_uninit(void)
                 counter[GHR]=3;
                 sim_num_mispred_2level++;//incorrect
             }
+#if PARANOIA
             else if(counter[GHR]==3)//predict not taken
                 counter[GHR]=3;//correct
             else
-                panic("WHAT THE FUCK IS HAPPENING");
-            
+                panic("WHAT IS HAPPENING I DON'T EVEN");
+#endif
             GHR = (GHR << 1) & 0x1FF;
         }
         else//if branch was taken
@@ -330,8 +333,10 @@ sim_uninit(void)
                 counter[GHR]=1;
                 sim_num_mispred_2level++;//incorrect
             }
+#if PARANOIA
             else if(counter[GHR]==1)//predict taken
                 counter[GHR]=1;//correct
+#endif
             else if(counter[GHR]==2)//predict taken
                 counter[GHR]=1;//correct
             else if(counter[GHR]==3)//predict not taken
@@ -339,9 +344,10 @@ sim_uninit(void)
                 counter[GHR]=0;
                 sim_num_mispred_2level++;//incorrect
             }
+#if PARANOIA
             else
-                panic("WHAT THE FUCK IS HAPPENING");
-            
+                panic("WHAT IS HAPPENING I DON'T EVEN");
+#endif
             GHR = ((GHR << 1) & 0x1FF )+1;
         }
     }
@@ -359,10 +365,16 @@ sim_main(void)
 
 /* ECE552 Assignment 2 - BEGIN CODE*/ 
 
+#if PARANOIA
 	int i;
 	for(i=0;i<4096;i++)
 		twobit[i]=0;
-
+	int j;
+	for(j=0;j<8;j++)
+	    for(i=0;i<512;i++)
+	        twolvl[j][i]=0;
+#endif
+	        
 /* ECE552 Assignment 2 - END CODE*/ 
 
 
@@ -452,10 +464,12 @@ sim_main(void)
                 twobit[indextwobit]=3;
                 sim_num_mispred_2bitsat++;//incorrect
             }
+#if PARANOIA
             else if(twobit[indextwobit]==3)//predict not taken
                 twobit[indextwobit]=3;//correct
             else
-                panic("WHAT THE FUCK IS HAPPENING");
+                panic("WHAT IS HAPPENING I DON'T EVEN");
+#endif
         }
         else//if branch was taken
         {
@@ -469,8 +483,10 @@ sim_main(void)
                 twobit[indextwobit]=1;
                 sim_num_mispred_2bitsat++;//incorrect
             }
+#if PARANOIA
             else if(twobit[indextwobit]==1)//predict taken
                 twobit[indextwobit]=1;//correct
+#endif
             else if(twobit[indextwobit]==2)//predict taken
                 twobit[indextwobit]=1;//correct
             else if(twobit[indextwobit]==3)//predict not taken
@@ -478,8 +494,10 @@ sim_main(void)
                 twobit[indextwobit]=0;
                 sim_num_mispred_2bitsat++;//incorrect
             }
+#if PARANOIA
             else
-                panic("WHAT THE FUCK IS HAPPENING");
+                panic("WHAT IS HAPPENING I DON'T EVEN");
+#endif
         }
         //2-LEVEL
         int indextwolvl = (regs.regs_PC >> 3) & 0x7;
