@@ -359,7 +359,7 @@ sim_main(void)
 
 /* ECE552 Assignment 2 - BEGIN CODE*/
     //if we get to a conditional integer or floating point
-    if( (MD_OP_FLAGS(op) & F_COND) || (MD_OP_FLAGS(op) & F_FPCOND) )
+    if( MD_OP_FLAGS(op) & F_COND )
     {
         //Conditional branch encountered
         sim_num_br++;
