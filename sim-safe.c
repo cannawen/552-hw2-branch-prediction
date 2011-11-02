@@ -350,6 +350,7 @@ sim_uninit(void)
 #endif
             GHR = ((GHR << 1) & 0x1FF )+1;
         }
+        sim_num_mispred_openend=sim_num_mispred_2level;
     }
 /* ECE552 Assignment 2 - END CODE*/ 
 
