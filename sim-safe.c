@@ -87,6 +87,8 @@ static counter_t sim_num_mispred_openend = 0;	//number of mispredicted branches 
 /* ECE552 Assignment 2 - BEGIN CODE*/ 
 
 int twobit[4096];
+int GHR;
+int twolvl[8][512];
 
 /* ECE552 Assignment 2 - END CODE*/ 
 
@@ -296,6 +298,55 @@ sim_uninit(void)
 /* system call handler macro */
 #define SYSCALL(INST)	sys_syscall(&regs, mem_access, mem, INST, TRUE)
 
+/* ECE552 Assignment 2 - BEGIN CODE*/ 
+//function for 2level
+    void twobitsat(int *counter)
+    {
+        if(regs.regs_NPC==regs.regs_PC + 8) //if branch was not taken
+        {
+            if(counter[GHR]==0)//predicted not taken
+                counter[GHR]=3;//correct
+            else if(counter[GHR]==1)//predicted taken
+            {
+                counter[GHR]=2;
+                sim_num_mispred_2level++;//incorrect
+            }
+            else if(counter[GHR]==2)//predict taken
+            {
+                counter[GHR]=3;
+                sim_num_mispred_2level++;//incorrect
+            }
+            else if(counter[GHR]==3)//predict not taken
+                counter[GHR]=3;//correct
+            else
+                panic("WHAT THE FUCK IS HAPPENING");
+            
+            GHR = (GHR << 1) & 0x1FF;
+        }
+        else//if branch was taken
+        {            
+            if(counter[GHR]==0)//predict not taken
+            {
+                counter[GHR]=1;
+                sim_num_mispred_2level++;//incorrect
+            }
+            else if(counter[GHR]==1)//predict taken
+                counter[GHR]=1;//correct
+            else if(counter[GHR]==2)//predict taken
+                counter[GHR]=1;//correct
+            else if(counter[GHR]==3)//predict not taken
+            {
+                counter[GHR]=0;
+                sim_num_mispred_2level++;//incorrect
+            }
+            else
+                panic("WHAT THE FUCK IS HAPPENING");
+            
+            GHR = ((GHR << 1) & 0x1FF )+1;
+        }
+    }
+/* ECE552 Assignment 2 - END CODE*/ 
+
 /* start simulation, program loaded, processor precise state initialized */
 void
 sim_main(void)
@@ -367,6 +418,7 @@ sim_main(void)
       }
 
 /* ECE552 Assignment 2 - BEGIN CODE*/
+
     //if we get to a conditional integer or floating point
     if( MD_OP_FLAGS(op) & F_COND )
     {
@@ -377,7 +429,7 @@ sim_main(void)
         int random_taken = rand()%2;//1: taken. 0: not taken
         
         int indextwobit = (regs.regs_PC >> 3) & 0xFFF;
-        
+
         if(regs.regs_NPC==regs.regs_PC + 8) //if branch was not taken
         {
             //STATIC predicted taken, was not taken
@@ -386,7 +438,8 @@ sim_main(void)
             //RANDOM predicted taken, was not taken
             if(random_taken)
                 sim_num_mispred_random++;//misprediction++
-                
+            
+            //2-BIT SATURATED
             if(twobit[indextwobit]==0)//predicted not taken
                 twobit[indextwobit]=3;//correct
             else if(twobit[indextwobit]==1)//predicted taken
@@ -410,6 +463,7 @@ sim_main(void)
             if(!random_taken)
                 sim_num_mispred_random++;//misprediction++
             
+            //2-BIT SATURATED
             if(twobit[indextwobit]==0)//predict not taken
             {
                 twobit[indextwobit]=1;
@@ -427,6 +481,9 @@ sim_main(void)
             else
                 panic("WHAT THE FUCK IS HAPPENING");
         }
+        //2-LEVEL
+        int indextwolvl = (regs.regs_PC >> 3) & 0x7;
+        twobitsat(twolvl[indextwolvl]);    
     }
 /* ECE552 Assignment 2 - END CODE*/
 
