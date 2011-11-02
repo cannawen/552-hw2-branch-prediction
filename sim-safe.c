@@ -82,8 +82,13 @@ static counter_t sim_num_mispred_2bitsat = 0;	//number of mispredicted branches 
 static counter_t sim_num_mispred_2level = 0;	//number of mispredicted branches of two level predictor
 static counter_t sim_num_mispred_openend = 0;	//number of mispredicted branches of the open-ended predictor
 
-/* ECE552 Assignment 2 - STATS COUNTERS - END */ 
+/* ECE552 Assignment 2 - STATS COUNTERS - END */
+ 
+/* ECE552 Assignment 2 - BEGIN CODE*/ 
 
+int twobit[4096];
+
+/* ECE552 Assignment 2 - END CODE*/ 
 
  
 /* simulated registers */
@@ -361,7 +366,9 @@ sim_main(void)
         
         //Randomly predict if branch was taken
         int random_taken = rand()%2;//1: taken. 0: not taken
-            
+        
+        int indextwobit = (regs.regs_PC >> 4) & 0xFFF;
+        
         if(regs.regs_NPC==regs.regs_PC + 8) //if branch was not taken
         {
             //STATIC predicted taken, was not taken
@@ -370,12 +377,46 @@ sim_main(void)
             //RANDOM predicted taken, was not taken
             if(random_taken)
                 sim_num_mispred_random++;//misprediction++
+                
+            if(twobit[indextwobit]==0)//predicted not taken
+                twobit[indextwobit]=3;//correct
+            else if(twobit[indextwobit]==1)//predicted taken
+            {
+                twobit[indextwobit]=2;
+                sim_num_mispred_2bitsat++;//incorrect
+            }
+            else if(twobit[indextwobit]==2)//predict taken
+            {
+                twobit[indextwobit]=3;
+                sim_num_mispred_2bitsat++;//incorrect
+            }
+            /*else if(twobit[indextwobit]==3)//predict not taken
+                twobit[indextwobit]=3;//correct
+            else
+                panic("WHAT THE FUCK IS HAPPENING");*/
         }
         else//if branch was taken
         {
             //RANDOM predicted not taken, was taken
             if(!random_taken)
                 sim_num_mispred_random++;//misprediction++
+            
+            if(twobit[indextwobit]==0)//predict not taken
+            {
+                twobit[indextwobit]=1;
+                sim_num_mispred_2bitsat++;//incorrect
+            }
+            else if(twobit[indextwobit]==2)//predict taken
+                twobit[indextwobit]=1;//correct
+            else if(twobit[indextwobit]==3)//predict not taken
+            {
+                twobit[indextwobit]=0;
+                sim_num_mispred_2bitsat++;//incorrect
+            }
+            /*else if(twobit[indextwobit]==1)//predict taken
+                twobit[indextwobit]=1;//correct
+            else
+                panic("WHAT THE FUCK IS HAPPENING");*/
         }
     }
 /* ECE552 Assignment 2 - END CODE*/
