@@ -90,9 +90,9 @@ int twobit[4096];
 int GHR;
 int twolvl[8][512];
 #define OTABLES 128
-#define OTABLESBITS 0x7F//7 bits
+#define OTABLESBITS 0x7F
 #define OLINES 512
-#define OLINESBITS 0x1FF//9 bits
+#define OLINESBITS 0x1FF
 int OGHR;
 int open[OTABLES][OLINES];
 
@@ -305,7 +305,7 @@ sim_uninit(void)
 #define SYSCALL(INST)	sys_syscall(&regs, mem_access, mem, INST, TRUE)
 
 /* ECE552 Assignment 2 - BEGIN CODE*/ 
-#define PARANOIA 0
+#define PARANOIA 1
 
 //function for 2level
     void twobitsat(int *counter)
@@ -423,16 +423,18 @@ sim_main(void)
 /* ECE552 Assignment 2 - BEGIN CODE*/ 
 
 #if PARANOIA
+//#define INIT 0 //weakly not taken
+#define INIT 2 //weakly taken
 	int i;
 	for(i=0;i<4096;i++)
-		twobit[i]=0;
+		twobit[i]=INIT;
 	int j;
 	for(j=0;j<8;j++)
 	    for(i=0;i<512;i++)
-	        twolvl[j][i]=0;
+	        twolvl[j][i]=INIT;
 	for(j=0;j<OTABLES;j++)
 		for(i=0;i<OLINES;i++)
-			open[j][i]=0;
+			open[j][i]=INIT;
 #endif
 	        
 /* ECE552 Assignment 2 - END CODE*/ 
