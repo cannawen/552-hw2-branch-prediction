@@ -423,18 +423,16 @@ sim_main(void)
 /* ECE552 Assignment 2 - BEGIN CODE*/ 
 
 #if PARANOIA
-//#define INIT 0 //weakly not taken
-#define INIT 2 //weakly taken
 	int i;
 	for(i=0;i<4096;i++)
-		twobit[i]=INIT;
+		twobit[i]=0;
 	int j;
 	for(j=0;j<8;j++)
 	    for(i=0;i<512;i++)
-	        twolvl[j][i]=INIT;
+	        twolvl[j][i]=0;
 	for(j=0;j<OTABLES;j++)
 		for(i=0;i<OLINES;i++)
-			open[j][i]=INIT;
+			open[j][i]=2;//weakly taken
 #endif
 	        
 /* ECE552 Assignment 2 - END CODE*/ 
