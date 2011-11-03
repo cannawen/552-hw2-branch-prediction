@@ -89,6 +89,12 @@ static counter_t sim_num_mispred_openend = 0;	//number of mispredicted branches 
 int twobit[4096];
 int GHR;
 int twolvl[8][512];
+#define OTABLES 128
+#define OTABLESBITS 0x7F//7 bits
+#define OLINES 512
+#define OLINESBITS 0x1FF//9 bits
+int OGHR;
+int open[OTABLES][OLINES];
 
 /* ECE552 Assignment 2 - END CODE*/ 
 
@@ -299,7 +305,7 @@ sim_uninit(void)
 #define SYSCALL(INST)	sys_syscall(&regs, mem_access, mem, INST, TRUE)
 
 /* ECE552 Assignment 2 - BEGIN CODE*/ 
-#define PARANOIA 1
+#define PARANOIA 0
 
 //function for 2level
     void twobitsat(int *counter)
@@ -350,8 +356,58 @@ sim_uninit(void)
 #endif
             GHR = ((GHR << 1) & 0x1FF )+1;
         }
-        sim_num_mispred_openend=sim_num_mispred_2level;
     }
+    
+    void openpredict(int *counter)
+    {
+        if(regs.regs_NPC==regs.regs_PC + 8) //if branch was not taken
+        {
+            if(counter[OGHR]==0)//predicted not taken
+                counter[OGHR]=3;//correct
+            else if(counter[OGHR]==1)//predicted taken
+            {
+                counter[OGHR]=2;
+                sim_num_mispred_openend++;//incorrect
+            }
+            else if(counter[OGHR]==2)//predict taken
+            {
+                counter[OGHR]=3;
+                sim_num_mispred_openend++;//incorrect
+            }
+#if PARANOIA
+            else if(counter[OGHR]==3)//predict not taken
+                counter[OGHR]=3;//correct
+            else
+                panic("WHAT IS HAPPENING I DON'T EVEN");
+#endif
+            OGHR = (OGHR << 1) & OLINESBITS;
+        }
+        else//if branch was taken
+        {            
+            if(counter[OGHR]==0)//predict not taken
+            {
+                counter[OGHR]=1;
+                sim_num_mispred_openend++;//incorrect
+            }
+#if PARANOIA
+            else if(counter[OGHR]==1)//predict taken
+                counter[OGHR]=1;//correct
+#endif
+            else if(counter[OGHR]==2)//predict taken
+                counter[OGHR]=1;//correct
+            else if(counter[OGHR]==3)//predict not taken
+            {
+                counter[OGHR]=0;
+                sim_num_mispred_openend++;//incorrect
+            }
+#if PARANOIA
+            else
+                panic("WHAT IS HAPPENING I DON'T EVEN");
+#endif
+            OGHR = ((OGHR << 1) & OLINESBITS )+1;
+        }
+    }
+    
 /* ECE552 Assignment 2 - END CODE*/ 
 
 /* start simulation, program loaded, processor precise state initialized */
@@ -374,6 +430,9 @@ sim_main(void)
 	for(j=0;j<8;j++)
 	    for(i=0;i<512;i++)
 	        twolvl[j][i]=0;
+	for(j=0;j<OTABLES;j++)
+		for(i=0;i<OLINES;i++)
+			open[j][i]=0;
 #endif
 	        
 /* ECE552 Assignment 2 - END CODE*/ 
@@ -502,7 +561,11 @@ sim_main(void)
         }
         //2-LEVEL
         int indextwolvl = (regs.regs_PC >> 3) & 0x7;
-        twobitsat(twolvl[indextwolvl]);    
+        twobitsat(twolvl[indextwolvl]);
+        
+        //OPEN
+        int opentable=(regs.regs_PC >> 3)  & OTABLESBITS;
+        openpredict(open[opentable]);
     }
 /* ECE552 Assignment 2 - END CODE*/
 
