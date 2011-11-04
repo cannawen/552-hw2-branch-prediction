@@ -305,7 +305,7 @@ sim_uninit(void)
 #define SYSCALL(INST)	sys_syscall(&regs, mem_access, mem, INST, TRUE)
 
 /* ECE552 Assignment 2 - BEGIN CODE*/ 
-#define PARANOIA 1
+#define PARANOIA 0
 
 //function for 2level
     void twobitsat(int *counter)
@@ -371,7 +371,7 @@ sim_uninit(void)
             }
             else if(counter[OGHR]==2)//predict taken
             {
-                counter[OGHR]=3;
+                counter[OGHR]=0;//3;
                 sim_num_mispred_openend++;//incorrect
             }
 #if PARANOIA
@@ -386,7 +386,7 @@ sim_uninit(void)
         {            
             if(counter[OGHR]==0)//predict not taken
             {
-                counter[OGHR]=1;
+                counter[OGHR]=2;//1;
                 sim_num_mispred_openend++;//incorrect
             }
 #if PARANOIA
@@ -432,7 +432,7 @@ sim_main(void)
 	        twolvl[j][i]=0;
 	for(j=0;j<OTABLES;j++)
 		for(i=0;i<OLINES;i++)
-			open[j][i]=2;//weakly taken
+			open[j][i]=0;//2;//weakly taken
 #endif
 	        
 /* ECE552 Assignment 2 - END CODE*/ 
